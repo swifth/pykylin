@@ -68,6 +68,18 @@ class TableColumn(Model, BaseColumn):
             l.append(col <= text(self.dttm_sql_literal(end_dttm)))
         return and_(*l)
 
+    def get_date_filter(self, start_dttm, end_dttm):
+        col = self.sqla_col.label('__time')
+        l = []
+        if start_dttm:
+            l.append(col >= text(self.dt_sql_literal(start_dttm)))
+        if end_dttm:
+            l.append(col <= text(self.dt_sql_literal(end_dttm)))
+        return and_(*l)
+
+    def get_sql_literal(self, dttm):
+        return "'{}'".format(dttm.strftime('%Y-%m-%d'))
+
     def get_timestamp_expression(self, time_grain):
         """Getting the time component of the query"""
         expr = self.expression or self.column_name
@@ -136,6 +148,8 @@ class SqlMetric(Model, BaseMetric):
     @property
     def sqla_col(self):
         name = self.metric_name
+        if name == 'count':
+            name = 'total_count'
         return literal_column(self.expression).label(name)
 
     @property
@@ -531,10 +545,18 @@ class SqlaTable(Model, BaseDatasource):
             inner_select_exprs += [inner_main_metric_expr]
             subq = select(inner_select_exprs)
             subq = subq.select_from(tbl)
-            inner_time_filter = dttm_col.get_time_filter(
-                inner_from_dttm or from_dttm,
-                inner_to_dttm or to_dttm,
-            )
+
+            if db_engine_spec.name == 'kylin':
+                inner_time_filter = dttm_col.get_date_filter(
+                    inner_from_dttm or from_dttm,
+                    inner_to_dttm or to_dttm,
+                )
+            else:
+                inner_time_filter = dttm_col.get_time_filter(
+                    inner_from_dttm or from_dttm,
+                    inner_to_dttm or to_dttm,
+                )
+
             subq = subq.where(and_(*(where_clause_and + [inner_time_filter])))
             subq = subq.group_by(*inner_groupby_exprs)
 
