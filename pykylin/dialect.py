@@ -155,7 +155,7 @@ class KylinDialect(default.DefaultDialect):
         conn = engine.contextual_connect()
         return conn.connection.list_tables()
 
-    def extra_table_metadata(self, engine, database, table_name, schema_name=None, **kw):
+    def extra_table_metadata(self, engine, database, schema_name, table_name, **kw):
         conn = engine.contextual_connect()
         return conn.connection.list_columns(table_name)
 
