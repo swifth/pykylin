@@ -151,9 +151,13 @@ class KylinDialect(default.DefaultDialect):
 
     #def get_table_names(self, connection, schema=None, **kw):
     #    return connection.connection.list_tables()
-    def get_table_names(self, engine, schema=None, **kw):
+    def get_table_names(self, engine, schema=None, inspector=None, **kw):
         conn = engine.contextual_connect()
         return conn.connection.list_tables()
+
+    def extra_table_metadata(self, engine, database, table_name, schema_name=None, **kw):
+        conn = engine.contextual_connect()
+        return conn.connection.list_columns(table_name)
 
     def has_table(self, connection, table_name, schema=None):
         return table_name in self.get_table_names(connection, table_name, schema)
