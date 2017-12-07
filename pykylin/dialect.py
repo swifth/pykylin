@@ -152,7 +152,7 @@ class KylinDialect(default.DefaultDialect):
     #def get_table_names(self, connection, schema=None, **kw):
     #    return connection.connection.list_tables()
     def get_table_names(self, engine, schema=None, **kw):
-	conn = engine.contextual_connect()
+        conn = engine.contextual_connect()
         return conn.connection.list_tables()
 
     def has_table(self, connection, table_name, schema=None):
@@ -197,6 +197,6 @@ class KylinDialect(default.DefaultDialect):
         return {}
 
     def get_unique_constraints(
-            self, connection, table_name, schema=None, **kw):
+        self, connection, table_name, schema=None, **kw):
         return []
 
