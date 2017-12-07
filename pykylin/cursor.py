@@ -35,6 +35,11 @@ class Cursor(object):
         resp = self.connection.proxy.post('query', json=data)
 
         column_metas = resp['columnMetas']
+
+        for c in column_metas:
+            c['label'] = str(c['label']).lower()
+            c['name'] = str(c['name']).lower()
+
         self.description = [
             [c['label'], c['columnTypeName'],
              c['displaySize'], 0,
@@ -54,7 +59,9 @@ class Cursor(object):
             column = meta[i]
             tpe = column[1]
             val = result[i]
-            if tpe == 'DATE':
+            if val is None:
+                pass
+            elif tpe == 'DATE':
                 val = parser.parse(val)
             elif tpe == 'BIGINT' or tpe == 'INT' or tpe == 'TINYINT':
                 val = int(val)
